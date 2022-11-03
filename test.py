@@ -1,3 +1,5 @@
+import clustering
+import csv
 import cv2
 import os
 import shutil
@@ -7,6 +9,7 @@ SLICES_OUTPUT_DIR = 'Slices/'
 CLUSTERS_OUTPUT_DIR = 'Clusters/'
 IMAGE_FILE_SUFFIX = 'thresh.png'
 IMAGE_EXTENSION = '.png'
+MIN_PIXELS_IN_CLUSTER = 135
 
 
 # utility function to remove file extension form file name
@@ -34,6 +37,13 @@ def read_input_data():
             brain_image = cv2.imread(join_path(INPUT_DIR, file_name))
             images.append((file_name, brain_image))
     return images
+
+
+def write_to_scv_file(file_path, header, rows):
+    with open(file_path, 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
+        writer.writerows(rows)
 
 
 # utiltiy function to check whether given two rectangles overlap with each other 
@@ -120,6 +130,35 @@ def main():
         for slice in slices:
             cv2.imwrite(join_path(slices_dir, str(index) + IMAGE_EXTENSION), slice)
             index += 1
+
+    # initialise Boundaries output directory
+    init_output_dirs(CLUSTERS_OUTPUT_DIR)
+
+    # get list of all sub directories under Slices folder    
+    slice_dirs = [dir for dir in os.listdir(SLICES_OUTPUT_DIR) if os.path.isdir(join_path(SLICES_OUTPUT_DIR, dir))]
+
+    # for each sub directory under Slices directory read all the slice image files and 
+    # find clusters for each of the slices and write the output images to Clusters directory
+    # also create a csv file listing clusters count for each slice
+    slices_clusters_count_fields = ['SliceNumber', 'ClusterCount']
+    for slice_dir in slice_dirs:
+        source_path = join_path(SLICES_OUTPUT_DIR, slice_dir)
+        sub_directory = join_path(CLUSTERS_OUTPUT_DIR, slice_dir)
+        os.makedirs(sub_directory, exist_ok = True)
+        slices_clusters_count_list = []
+        slice_index = 1
+        for file_name in os.listdir(source_path):
+            brain_image = cv2.imread(join_path(source_path, file_name))
+            cluster_image, clusters_count = clustering.find_clusters(brain_image, MIN_PIXELS_IN_CLUSTER)
+            cv2.imwrite(join_path(sub_directory, file_name), cluster_image)
+            slices_clusters_count_list.append([slice_index, clusters_count])
+            slice_index += 1
+        slices_clusters_count_file = f'{join_path(sub_directory, slice_dir)}.csv'
+        write_to_scv_file(
+            slices_clusters_count_file, 
+            slices_clusters_count_fields, 
+            slices_clusters_count_list)
+
 
 if __name__ == '__main__':
     main()
