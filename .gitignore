@@ -1,7 +1,6 @@
-
 __pycache__/
 Clusters/
 Slices/
 testPatient/
 .DS_Store
-.zip
+*.zip

@@ -10,6 +10,7 @@ CLUSTERS_OUTPUT_DIR = 'Clusters/'
 IMAGE_FILE_SUFFIX = 'thresh.png'
 IMAGE_EXTENSION = '.png'
 MIN_PIXELS_IN_CLUSTER = 135
+SLICES_CLUSTER_COUNT_FIELDS = ['SliceNumber', 'ClusterCount']
 
 
 # utility function to remove file extension form file name
@@ -140,7 +141,6 @@ def main():
     # for each sub directory under Slices directory read all the slice image files and 
     # find clusters for each of the slices and write the output images to Clusters directory
     # also create a csv file listing clusters count for each slice
-    slices_clusters_count_fields = ['SliceNumber', 'ClusterCount']
     for slice_dir in slice_dirs:
         source_path = join_path(SLICES_OUTPUT_DIR, slice_dir)
         sub_directory = join_path(CLUSTERS_OUTPUT_DIR, slice_dir)
@@ -156,7 +156,7 @@ def main():
         slices_clusters_count_file = f'{join_path(sub_directory, slice_dir)}.csv'
         write_to_scv_file(
             slices_clusters_count_file, 
-            slices_clusters_count_fields, 
+            SLICES_CLUSTER_COUNT_FIELDS, 
             slices_clusters_count_list)
 
 
