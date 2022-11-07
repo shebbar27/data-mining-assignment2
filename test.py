@@ -4,6 +4,7 @@ import cv2
 import os
 import shutil
 
+
 INPUT_DIR = 'testPatient/'
 SLICES_OUTPUT_DIR = 'Slices/'
 CLUSTERS_OUTPUT_DIR = 'Clusters/'
@@ -146,13 +147,12 @@ def main():
         sub_directory = join_path(CLUSTERS_OUTPUT_DIR, slice_dir)
         os.makedirs(sub_directory, exist_ok = True)
         slices_clusters_count_list = []
-        slice_index = 1
         for file_name in os.listdir(source_path):
             brain_image = cv2.imread(join_path(source_path, file_name))
             cluster_image, clusters_count = clustering.find_clusters(brain_image, MIN_PIXELS_IN_CLUSTER)
             cv2.imwrite(join_path(sub_directory, file_name), cluster_image)
-            slices_clusters_count_list.append([slice_index, clusters_count])
-            slice_index += 1
+            slices_clusters_count_list.append([remove_file_extension(file_name), clusters_count])
+
         slices_clusters_count_file = f'{join_path(sub_directory, slice_dir)}.csv'
         write_to_scv_file(
             slices_clusters_count_file, 
